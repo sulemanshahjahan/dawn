@@ -411,7 +411,7 @@
       }
     },
     "coming-soon": {
-      "name": "Coming soon",
+      "name": "Undercraft Studio Launching",
       "settings": {
         "caption": {
           "label": "Caption",
@@ -472,7 +472,7 @@
         }
       },
       "presets": {
-        "name": "Coming soon"
+        "name": "Undercraft Studio Launching"
       }
     },
     "all": {
