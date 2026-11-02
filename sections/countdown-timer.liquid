@@ -1,0 +1,278 @@
+{%- liquid
+  assign section_id = section.id
+  assign end_date = section.settings.end_date | strip
+-%}
+
+{%- style -%}
+  .section-{{ section_id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  #CountdownTimer-{{ section_id }} {
+    background-color: {{ section.settings.background_color }};
+    color: {{ section.settings.text_color }};
+    text-align: center;
+  }
+
+  #CountdownTimer-{{ section_id }} .countdown-timer__heading {
+    margin: 0 0 2rem;
+    color: inherit;
+  }
+
+  #CountdownTimer-{{ section_id }} .countdown-timer__units {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.2rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  #CountdownTimer-{{ section_id }} .countdown-timer__unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1 1 0;
+    min-width: 6.5rem;
+    max-width: 12rem;
+    padding: 1.2rem 0.8rem;
+    border: 0.1rem solid currentColor;
+    border-radius: 0.8rem;
+  }
+
+  #CountdownTimer-{{ section_id }} .countdown-timer__value {
+    font-size: 3.2rem;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  #CountdownTimer-{{ section_id }} .countdown-timer__label {
+    margin-top: 0.6rem;
+    font-size: 1.1rem;
+    letter-spacing: 0.1rem;
+    text-transform: uppercase;
+    opacity: 0.8;
+  }
+
+  #CountdownTimer-{{ section_id }} .countdown-timer__message {
+    margin: 0;
+    font-size: 1.8rem;
+  }
+
+  #CountdownTimer-{{ section_id }}[data-state='ended'] .countdown-timer__units,
+  #CountdownTimer-{{ section_id }}:not([data-state='ended']) .countdown-timer__message {
+    display: none;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section_id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+
+    #CountdownTimer-{{ section_id }} .countdown-timer__units {
+      gap: 2rem;
+    }
+
+    #CountdownTimer-{{ section_id }} .countdown-timer__unit {
+      min-width: 10rem;
+      padding: 2rem 1.2rem;
+    }
+
+    #CountdownTimer-{{ section_id }} .countdown-timer__value {
+      font-size: 4.8rem;
+    }
+
+    #CountdownTimer-{{ section_id }} .countdown-timer__label {
+      font-size: 1.3rem;
+    }
+  }
+{%- endstyle -%}
+
+<div
+  id="CountdownTimer-{{ section_id }}"
+  class="countdown-timer section-{{ section_id }}-padding"
+  data-end-date="{{ end_date | escape }}"
+  data-state="pending"
+>
+  <div class="page-width">
+    {%- if section.settings.heading != blank -%}
+      <h2 class="countdown-timer__heading inline-richtext {{ section.settings.heading_size }}">
+        {{ section.settings.heading }}
+      </h2>
+    {%- endif -%}
+
+    <ul class="countdown-timer__units" role="timer" aria-live="off" aria-atomic="true">
+      <li class="countdown-timer__unit">
+        <span class="countdown-timer__value" data-unit="days">00</span>
+        <span class="countdown-timer__label">{{ 'sections.countdown_timer.days' | t }}</span>
+      </li>
+      <li class="countdown-timer__unit">
+        <span class="countdown-timer__value" data-unit="hours">00</span>
+        <span class="countdown-timer__label">{{ 'sections.countdown_timer.hours' | t }}</span>
+      </li>
+      <li class="countdown-timer__unit">
+        <span class="countdown-timer__value" data-unit="minutes">00</span>
+        <span class="countdown-timer__label">{{ 'sections.countdown_timer.minutes' | t }}</span>
+      </li>
+      <li class="countdown-timer__unit">
+        <span class="countdown-timer__value" data-unit="seconds">00</span>
+        <span class="countdown-timer__label">{{ 'sections.countdown_timer.seconds' | t }}</span>
+      </li>
+    </ul>
+
+    <p class="countdown-timer__message">{{ section.settings.end_message | escape }}</p>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var root = document.getElementById('CountdownTimer-{{ section_id }}');
+    if (!root) return;
+
+    var endTime = Date.parse(root.dataset.endDate || '');
+    var values = {
+      days: root.querySelector('[data-unit="days"]'),
+      hours: root.querySelector('[data-unit="hours"]'),
+      minutes: root.querySelector('[data-unit="minutes"]'),
+      seconds: root.querySelector('[data-unit="seconds"]')
+    };
+    var intervalId = null;
+
+    function pad(n) {
+      return n < 10 ? '0' + n : String(n);
+    }
+
+    function render(ms) {
+      var total = Math.max(0, Math.floor(ms / 1000));
+      values.days.textContent = pad(Math.floor(total / 86400));
+      values.hours.textContent = pad(Math.floor((total % 86400) / 3600));
+      values.minutes.textContent = pad(Math.floor((total % 3600) / 60));
+      values.seconds.textContent = pad(total % 60);
+    }
+
+    function tick() {
+      var remaining = endTime - Date.now();
+      if (remaining <= 0) {
+        render(0);
+        root.dataset.state = 'ended';
+        if (intervalId) window.clearInterval(intervalId);
+        return;
+      }
+      render(remaining);
+      root.dataset.state = 'running';
+    }
+
+    if (isNaN(endTime)) {
+      render(0);
+      root.dataset.state = 'invalid';
+      return;
+    }
+
+    tick();
+    intervalId = window.setInterval(tick, 1000);
+
+    // Stop ticking when the theme editor removes or re-renders this section.
+    document.addEventListener('shopify:section:unload', function (event) {
+      if (event.detail && event.detail.sectionId === '{{ section_id }}' && intervalId) {
+        window.clearInterval(intervalId);
+      }
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "t:sections.countdown-timer.name",
+  "tag": "section",
+  "class": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "default": "t:sections.countdown-timer.settings.heading.default",
+      "label": "t:sections.countdown-timer.settings.heading.label"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        {
+          "value": "h2",
+          "label": "t:sections.all.heading_size.options__1.label"
+        },
+        {
+          "value": "h1",
+          "label": "t:sections.all.heading_size.options__2.label"
+        },
+        {
+          "value": "h0",
+          "label": "t:sections.all.heading_size.options__3.label"
+        }
+      ],
+      "default": "h1",
+      "label": "t:sections.all.heading_size.label"
+    },
+    {
+      "type": "text",
+      "id": "end_date",
+      "label": "t:sections.countdown-timer.settings.end_date.label",
+      "default": "2026-12-31T23:59:59-05:00",
+      "info": "t:sections.countdown-timer.settings.end_date.info"
+    },
+    {
+      "type": "text",
+      "id": "end_message",
+      "label": "t:sections.countdown-timer.settings.end_message.label",
+      "default": "t:sections.countdown-timer.settings.end_message.default"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:sections.countdown-timer.settings.background_color.label",
+      "default": "#111111"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "t:sections.countdown-timer.settings.text_color.label",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 40
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.countdown-timer.presets.name"
+    }
+  ]
+}
+{% endschema %}

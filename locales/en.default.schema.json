@@ -375,6 +375,32 @@
     }
   },
   "sections": {
+    "countdown-timer": {
+      "name": "Countdown timer",
+      "settings": {
+        "heading": {
+          "label": "Heading",
+          "default": "Sale ends in"
+        },
+        "end_date": {
+          "label": "End date and time",
+          "info": "Use ISO 8601 format with a timezone offset, for example 2026-12-31T23:59:59-05:00 or 2026-12-31T23:59:59Z."
+        },
+        "end_message": {
+          "label": "Message after countdown ends",
+          "default": "This offer has ended."
+        },
+        "background_color": {
+          "label": "Background color"
+        },
+        "text_color": {
+          "label": "Text color"
+        }
+      },
+      "presets": {
+        "name": "Countdown timer"
+      }
+    },
     "all": {
       "animation": {
         "content": "Animations",
