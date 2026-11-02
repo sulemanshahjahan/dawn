@@ -89,11 +89,33 @@
         "padding_top": 40,
         "padding_bottom": 40
       }
+    },
+    "coming_soon_etV3aj": {
+      "type": "coming-soon",
+      "name": "t:sections.coming-soon.presets.name",
+      "settings": {
+        "caption": "Coming soon",
+        "heading": "Something new is on the way",
+        "heading_size": "h1",
+        "text": "<p>We're putting the finishing touches on it. Check back soon.</p>",
+        "launch_date": "2026-12-15",
+        "date_label": "Launching",
+        "date_format": "%B %-d, %Y",
+        "button_label": "",
+        "button_link": "",
+        "button_style_secondary": false,
+        "content_alignment": "center",
+        "color_scheme": "",
+        "full_width": true,
+        "padding_top": 52,
+        "padding_bottom": 52
+      }
     }
   },
   "order": [
     "image_banner",
     "featured_collection",
-    "countdown_timer_x9Gmt4"
+    "countdown_timer_x9Gmt4",
+    "coming_soon_etV3aj"
   ]
 }
